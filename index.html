@@ -1,58 +1,67 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BoltArcade — Quick browser games</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bolt Arcade</title>
   <style>
-    :root{--bg:#0f1720;--card:#0b1220;--accent:#00c2a8;--text:#e6eef6}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh}
-    header{padding:28px 20px;text-align:center}
-    h1{margin:0;font-size:28px;letter-spacing:-0.5px}
-    .container{width:100%;max-width:980px;margin:20px auto;padding:0 16px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.5);text-align:center}
-    .card a{display:block;text-decoration:none;color:var(--text)}
-    .btn{display:inline-block;margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--accent);color:#012022;font-weight:600}
-    footer{margin-top:auto;padding:18px;text-align:center;color:#93a1b1;font-size:13px}
-    @media (max-width:420px){h1{font-size:22px}}
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #121212;
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      background: #1e1e1e;
+      padding: 20px;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    a.game-card {
+      display: block;
+      padding: 20px;
+      background: #2a2a2a;
+      border-radius: 12px;
+      text-decoration: none;
+      color: white;
+      transition: transform 0.2s, background 0.2s;
+    }
+    a.game-card:hover {
+      transform: scale(1.05);
+      background: #3a3a3a;
+    }
+    footer {
+      margin-top: 30px;
+      padding: 15px;
+      background: #1e1e1e;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>BoltArcade</h1>
-    <p style="color:#93a1b1;margin-top:6px">Fast, lightweight browser games — play instantly.</p>
-  </header>
+  <header>Bolt Arcade</header>
 
-  <main class="container">
-    <div style="margin-bottom:12px;color:#98a7b6">Featured games</div>
-    <div class="grid">
-      <div class="card">
-        <a href="/games/snake.html" title="Play Snake">
-          <h3>Snake</h3>
-          <div style="color:#98a7b6;font-size:13px">Classic snake — arrow keys or WASD</div>
-          <span class="btn">Play →</span>
-        </a>
-      </div>
-
-      <div class="card">
-        <a href="/games/minesweeper.html" title="Play Minesweeper">
-          <h3>Minesweeper</h3>
-          <div style="color:#98a7b6;font-size:13px">Reveal tiles, avoid the mines — right-click to flag</div>
-          <span class="btn">Play →</span>
-        </a>
-      </div>
-
-      <div class="card" style="opacity:.85">
-        <h3>More coming soon</h3>
-        <div style="color:#98a7b6;font-size:13px;margin-top:6px">Add more games by pushing files to GitHub</div>
-      </div>
-    </div>
+  <main>
+    <a href="games/snake.html" class="game-card">🐍 Snake</a>
+    <a href="games/minesweeper.html" class="game-card">💣 Minesweeper</a>
+    <a href="games/tic-tac-toe.html" class="game-card">❌⭕ Tic-Tac-Toe</a>
+    <a href="games/pong.html" class="game-card">🏓 Pong</a>
+    <a href="games/breakout.html" class="game-card">🧱 Breakout</a>
+    <a href="games/2048.html" class="game-card">🔢 2048</a>
+    <a href="games/tetris.html" class="game-card">🎮 Tetris</a>
+    <a href="games/connect-four.html" class="game-card">🔴🟡 Connect Four</a>
   </main>
 
-  <footer>© <span id="year"></span> BoltArcade — built for quick play</footer>
-
-  <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+  <footer>
+    © 2025 Bolt Arcade | All games are free to play
+  </footer>
 </body>
 </html>
