@@ -1,166 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2048</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #faf8ef;
-    }
-    h1 {
-      margin-bottom: 10px;
-      color: #776e65;
-    }
-    #game-container {
-      width: 400px;
-      height: 400px;
-      background: #bbada0;
-      border-radius: 6px;
-      padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-gap: 10px;
-    }
-    .tile {
-      width: 100%;
-      padding-top: 100%;
-      position: relative;
-      background: #cdc1b4;
-      border-radius: 3px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #776e65;
-      text-align: center;
-    }
-    .tile span {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    #score {
-      margin: 10px;
-      font-size: 20px;
-      color: #776e65;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2048 — BoltArcade</title>
+<style>
+  :root{
+    --bg:#faf8ef;
+    --board:#bbada0;
+    --tile-2:#eee4da;
+    --tile-4:#ede0c8;
+    --tile-text:#776e65;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--tile-text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+  }
+
+  .wrap{
+    width:min(440px,96vw);
+    text-align:center;
+  }
+
+  h1{
+    margin:0 0 10px 0;
+    font-weight:700;
+    color:#776e65;
+    font-size:20px;
+  }
+
+  .score-row{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .score-box{
+    background:#eee;
+    color:#222;
+    padding:8px 12px;
+    border-radius:6px;
+    font-weight:700;
+    min-width:86px;
+  }
+  button#new{
+    background:#8f7a66;
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  #game-container{
+    margin:0 auto;
+    background:var(--board);
+    border-radius:8px;
+    padding:12px;
+    width:100%;
+    max-width:420px;
+    aspect-ratio:1/1;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    position:relative;
+  }
+
+  .tile{
+    width:100%;
+    background:#cdc1b4;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    color:var(--tile-text);
+    font-size:clamp(14px,3.6vw,24px);
+    transition:transform .12s ease, background .12s ease;
+    user-select:none;
+    min-height:0;
+  }
+
+  .tile.merged{ transform: scale(1.08); }
+  .overlay{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,0.7);
+    border-radius:8px;
+    font-size:20px;
+    z-index:10;
+    flex-direction:column;
+    gap:12px;
+  }
+  .overlay button{
+    background:#8f7a66;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700;
+  }
+
+  /* Tile colors */
+  .v2{ background:var(--tile-2); color:var(--tile-text); }
+  .v4{ background:var(--tile-4); color:var(--tile-text); }
+  .v8{ background:#f2b179; color:#f9f6f2; }
+  .v16{ background:#f59563; color:#f9f6f2; }
+  .v32{ background:#f67c5f; color:#f9f6f2; }
+  .v64{ background:#f65e3b; color:#f9f6f2; }
+  .v128{ background:#edcf72; color:#f9f6f2; font-size:clamp(12px,3vw,20px);}
+  .v256{ background:#edcc61; color:#f9f6f2; font-size:clamp(12px,3vw,20px);}
+  .v512{ background:#edc850; color:#f9f6f2; font-size:clamp(12px,3vw,18px);}
+  .v1024{ background:#edc53f; color:#f9f6f2; font-size:clamp(10px,2.6vw,16px);}
+  .v2048{ background:#edc22e; color:#f9f6f2; font-size:clamp(10px,2.4vw,16px);}
+
+  .meta {
+    margin-top:10px;
+    font-size:13px;
+    color:#8b7d73;
+  }
+  .controls {
+    margin-top:8px;
+    font-size:12px;
+    color:#8b7d73;
+  }
+
+  @media (max-width:420px){
+    .score-box{ min-width:72px; padding:7px 10px; font-size:14px; }
+    .wrap{ width:100%;}
+  }
+</style>
 </head>
 <body>
-  <h1>2048</h1>
-  <div id="score">Score: 0</div>
-  <div id="game-container"></div>
+  <div class="wrap" aria-live="polite">
+    <h1>2048</h1>
+
+    <div class="score-row">
+      <div class="score-box" id="score">Score: 0</div>
+      <div class="score-box" id="best">Best: 0</div>
+      <button id="new">New Game</button>
+    </div>
+
+    <div id="game-container" aria-label="2048 board"></div>
+
+    <div class="meta">Use arrow keys or swipe. Merge tiles to reach 2048.</div>
+    <div class="controls">Tip: tap New Game to restart.</div>
+  </div>
 
   <script>
-    const container = document.getElementById("game-container");
+    // 2048 improved implementation (fixed up/down)
+    const SIZE = 4;
+    const container = document.getElementById('game-container');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const newBtn = document.getElementById('new');
+
     let board = [];
     let score = 0;
+    let best = Number(localStorage.getItem('bolt2048_best') || 0);
+    let gameOver = false;
+    let won = false;
+    let prevBoard = null; // for animations
 
-    function initBoard() {
-      board = Array(4).fill().map(() => Array(4).fill(0));
-      addRandomTile();
-      addRandomTile();
-      renderBoard();
+    bestEl.textContent = 'Best: ' + best;
+
+    // Helpers
+    function createEmptyBoard() {
+      return Array.from({length: SIZE}, () => Array(SIZE).fill(0));
+    }
+
+    function copyBoard(b) {
+      return b.map(row => row.slice());
     }
 
     function addRandomTile() {
-      let empty = [];
-      for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-          if (board[r][c] === 0) empty.push({ r, c });
+      const empty = [];
+      for (let r=0;r<SIZE;r++){
+        for (let c=0;c<SIZE;c++){
+          if (board[r][c] === 0) empty.push({r,c});
         }
       }
-      if (empty.length > 0) {
-        let { r, c } = empty[Math.floor(Math.random() * empty.length)];
-        board[r][c] = Math.random() < 0.9 ? 2 : 4;
-      }
+      if (empty.length === 0) return;
+      const {r,c} = empty[Math.floor(Math.random()*empty.length)];
+      board[r][c] = Math.random() < 0.9 ? 2 : 4;
     }
 
     function renderBoard() {
-      container.innerHTML = "";
-      for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-          const tile = document.createElement("div");
-          tile.className = "tile";
-          if (board[r][c] > 0) {
-            tile.style.background = getTileColor(board[r][c]);
-            tile.innerHTML = `<span>${board[r][c]}</span>`;
+      // store prev for merge animation
+      const old = prevBoard;
+      prevBoard = copyBoard(board);
+
+      container.innerHTML = '';
+      for (let r=0;r<SIZE;r++){
+        for (let c=0;c<SIZE;c++){
+          const val = board[r][c];
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          if (val > 0) {
+            tile.classList.add('v' + val);
+            tile.innerHTML = `<span>${val}</span>`;
+            // merged animation: if old existed and old value < new value
+            if (old && old[r][c] < val && old[r][c] !== 0) {
+              tile.classList.add('merged');
+              setTimeout(() => tile.classList.remove('merged'), 160);
+            }
           }
           container.appendChild(tile);
         }
       }
-      document.getElementById("score").textContent = "Score: " + score;
+      scoreEl.textContent = 'Score: ' + score;
+      if (score > best) {
+        best = score;
+        localStorage.setItem('bolt2048_best', best);
+        bestEl.textContent = 'Best: ' + best;
+      }
     }
 
-    function getTileColor(val) {
-      const colors = {
-        2: "#eee4da", 4: "#ede0c8", 8: "#f2b179", 16: "#f59563",
-        32: "#f67c5f", 64: "#f65e3b", 128: "#edcf72", 256: "#edcc61",
-        512: "#edc850", 1024: "#edc53f", 2048: "#edc22e"
-      };
-      return colors[val] || "#3c3a32";
-    }
-
-    function slide(row) {
-      row = row.filter(val => val);
-      for (let i = 0; i < row.length - 1; i++) {
-        if (row[i] === row[i + 1]) {
-          row[i] *= 2;
-          score += row[i];
-          row[i + 1] = 0;
+    // Slide & merge left for a single row; returns {row, gained}
+    function slideAndMergeRow(row) {
+      const arr = row.filter(v => v !== 0);
+      const res = [];
+      let gained = 0;
+      for (let i=0;i<arr.length;i++) {
+        if (arr[i] === arr[i+1]) {
+          const newVal = arr[i]*2;
+          res.push(newVal);
+          gained += newVal;
+          i++; // skip next
+        } else {
+          res.push(arr[i]);
         }
       }
-      row = row.filter(val => val);
-      while (row.length < 4) row.push(0);
-      return row;
+      while (res.length < SIZE) res.push(0);
+      return {row:res, gained};
+    }
+
+    // Movement core - returns {moved, gained}
+    function moveLeftCore(curBoard) {
+      let moved = false;
+      let gained = 0;
+      const newB = createEmptyBoard();
+      for (let r=0;r<SIZE;r++) {
+        const {row, gained:gain} = slideAndMergeRow(curBoard[r]);
+        newB[r] = row;
+        gained += gain;
+        if (row.some((v,i) => v !== curBoard[r][i])) moved = true;
+      }
+      return {board:newB, moved, gained};
     }
 
     function rotateClockwise(mat) {
-      return mat[0].map((_, i) => mat.map(row => row[i]).reverse());
+      const N = mat.length;
+      const res = createEmptyBoard();
+      for (let r=0;r<N;r++){
+        for (let c=0;c<N;c++){
+          res[c][N-1-r] = mat[r][c];
+        }
+      }
+      return res;
+    }
+    function rotateCounter(mat) { // 90 counterclockwise
+      const N = mat.length;
+      const res = createEmptyBoard();
+      for (let r=0;r<N;r++){
+        for (let c=0;c<N;c++){
+          res[N-1-c][r] = mat[r][c];
+        }
+      }
+      return res;
     }
 
-    function moveLeft() {
-      let newBoard = board.map(row => slide(row));
-      if (JSON.stringify(newBoard) !== JSON.stringify(board)) {
-        board = newBoard;
+    // TRANSPOSE helper (used for up/down - reliable and not inverted)
+    function transpose(mat) {
+      return mat[0].map((_, i) => mat.map(row => row[i]));
+    }
+
+    function move(direction) {
+      if (gameOver) return;
+      let res, moved=false, gained=0;
+
+      if (direction === 'left') {
+        ({board:res, moved, gained} = moveLeftCore(board));
+      } else if (direction === 'right') {
+        // reverse rows
+        const reversed = board.map(row => row.slice().reverse());
+        const out = moveLeftCore(reversed);
+        res = out.board.map(row => row.reverse());
+        moved = out.moved;
+        gained = out.gained;
+      } else if (direction === 'up') {
+        // transpose so columns become rows, move left, then transpose back
+        const trans = transpose(board);
+        const out = moveLeftCore(trans);
+        res = transpose(out.board);
+        moved = out.moved;
+        gained = out.gained;
+      } else if (direction === 'down') {
+        // transpose, reverse each row (so down becomes left), move left, reverse back and transpose
+        const trans = transpose(board);
+        const rev = trans.map(row => row.slice().reverse());
+        const out = moveLeftCore(rev);
+        res = transpose(out.board.map(row => row.slice().reverse()));
+        moved = out.moved;
+        gained = out.gained;
+      }
+
+      if (moved) {
+        board = res;
+        score += gained;
         addRandomTile();
         renderBoard();
+        if (!won && board.some(r=>r.some(v=>v>=2048))) {
+          won = true;
+          showOverlay('You win!', 'Continue', false);
+        }
+        if (checkGameOver()) {
+          gameOver = true;
+          showOverlay('Game Over', 'Try Again', true);
+        }
       }
     }
 
-    function moveRight() {
-      board = board.map(row => row.reverse());
-      moveLeft();
-      board = board.map(row => row.reverse());
+    function checkGameOver() {
+      // if any empty -> not over
+      for (let r=0;r<SIZE;r++){
+        for (let c=0;c<SIZE;c++){
+          if (board[r][c] === 0) return false;
+        }
+      }
+      // check possible merges horizontally/vertically
+      for (let r=0;r<SIZE;r++){
+        for (let c=0;c<SIZE;c++){
+          const v = board[r][c];
+          if ((c+1<SIZE && board[r][c+1]===v) || (r+1<SIZE && board[r+1][c]===v)) return false;
+        }
+      }
+      return true;
     }
 
-    function moveUp() {
-      board = rotateClockwise(board);
-      moveLeft();
-      board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
+    function startNewGame() {
+      board = createEmptyBoard();
+      score = 0;
+      gameOver = false;
+      won = false;
+      addRandomTile();
+      addRandomTile();
+      prevBoard = copyBoard(board);
+      renderBoard();
+      hideOverlay();
     }
 
-    function moveDown() {
-      board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
-      moveLeft();
-      board = rotateClockwise(board);
-    }
+    // overlay
+    const overlayEl = document.createElement('div');
+    overlayEl.style.display='none';
+    overlayEl.className='overlay';
+    overlayEl.innerHTML = '<div id="overlayText"></div><div><button id="overlayBtn">Restart</button></div>';
+    container.parentElement.appendChild(overlayEl);
+    const overlayText = overlayEl.querySelector('#overlayText');
+    const overlayBtn = overlayEl.querySelector('#overlayBtn');
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft") moveLeft();
-      else if (e.key === "ArrowRight") moveRight();
-      else if (e.key === "ArrowUp") moveUp();
-      else if (e.key === "ArrowDown") moveDown();
+    function showOverlay(text, btnText, restartOnClick=true) {
+      overlayText.textContent = text;
+      overlayBtn.textContent = btnText;
+      overlayEl.style.display='flex';
+      overlayBtn.onclick = () => {
+        if (restartOnClick) startNewGame();
+        hideOverlay();
+      };
+    }
+    function hideOverlay() { overlayEl.style.display='none'; }
+
+    // Keyboard
+    document.addEventListener('keydown', e=>{
+      if (e.key === 'ArrowLeft') { e.preventDefault(); move('left'); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); move('right'); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); move('up'); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); move('down'); }
+      else if (e.key === 'r' || e.key === 'R') startNewGame();
     });
 
-    initBoard();
+    // touch swipe support
+    let touchStartX=0, touchStartY=0;
+    container.addEventListener('touchstart', e=>{
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    }, {passive:true});
+    container.addEventListener('touchend', e=>{
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > 30) move(dx>0 ? 'right' : 'left');
+      } else {
+        if (Math.abs(dy) > 30) move(dy>0 ? 'down' : 'up');
+      }
+    });
+
+    // new game button
+    newBtn.addEventListener('click', startNewGame);
+
+    // init
+    startNewGame();
   </script>
 </body>
 </html>
